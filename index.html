@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#8b0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UCO Inspección">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>UCO.P01.R02 – Inspección</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul:    #8b0000;
+    --azul2:   #b71c1c;
+    --acento:  #e8a020;
+    --fondo:   #f0f4f8;
+    --blanco:  #ffffff;
+    --gris:    #8a9ab0;
+    --linea:   #d0dae8;
+    --texto:   #2d0000;
+    --ok:      #1e8c4a;
+    --error:   #c0392b;
+    --radio:   12px;
+    --sombra:  0 2px 16px rgba(139,0,0,.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--fondo); font-family: 'Roboto', sans-serif; color: var(--texto); }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--azul);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; height: 56px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .topbar-logo { display: flex; align-items: center; gap: 10px; }
+  .topbar-logo svg { width: 32px; height: 32px; }
+  .topbar-title { color: #fff; font-size: 13px; font-weight: 700; line-height: 1.2; }
+  .topbar-sub   { color: var(--acento); font-size: 10px; font-weight: 500; letter-spacing: .5px; }
+  .btn-config {
+    background: rgba(255,255,255,.15); border: none; border-radius: 8px;
+    color: #fff; padding: 8px 12px; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ─── PASOS ─── */
+  .steps-bar {
+    position: fixed; top: 56px; left: 0; right: 0; z-index: 99;
+    background: var(--azul2);
+    display: flex; overflow-x: auto; scrollbar-width: none;
+    padding: 0 8px;
+  }
+  .steps-bar::-webkit-scrollbar { display: none; }
+  .step-tab {
+    flex-shrink: 0; color: rgba(255,255,255,.55);
+    padding: 10px 14px; font-size: 12px; font-weight: 500;
+    border-bottom: 3px solid transparent; cursor: pointer;
+    transition: all .2s; white-space: nowrap;
+  }
+  .step-tab.activo  { color: #fff; border-bottom-color: var(--acento); }
+  .step-tab.completo { color: rgba(255,255,255,.8); }
+  .step-tab .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: 700;
+    background: rgba(255,255,255,.2); margin-right: 5px;
+  }
+  .step-tab.activo .num   { background: var(--acento); color: var(--texto); }
+  .step-tab.completo .num { background: var(--ok); color: #fff; }
+
+  /* ─── CONTENIDO ─── */
+  .contenido {
+    margin-top: 104px;
+    padding: 16px;
+    padding-bottom: 100px;
+    min-height: calc(100vh - 104px);
+  }
+
+  /* ─── TARJETAS ─── */
+  .card {
+    background: var(--blanco); border-radius: var(--radio);
+    box-shadow: var(--sombra); margin-bottom: 14px; overflow: hidden;
+  }
+  .card-header {
+    background: var(--azul); color: #fff;
+    padding: 12px 16px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-header .icon { font-size: 16px; }
+  .card-body { padding: 16px; }
+
+  /* ─── CAMPOS ─── */
+  .campo { margin-bottom: 14px; }
+  .campo:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 11px; font-weight: 700; color: var(--gris);
+          text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  input[type="text"], input[type="date"], input[type="tel"], input[type="number"], textarea, select {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--linea); border-radius: 8px;
+    font-size: 15px; font-family: 'Roboto', sans-serif; color: var(--texto);
+    background: var(--blanco);
+    appearance: none; -webkit-appearance: none;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--rojo2); box-shadow: 0 0 0 3px rgba(183,28,28,.12);
+  }
+  input[type="number"] { font-family: 'Roboto Mono', monospace; }
+  .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ─── TABLA CÓMPUTOS ─── */
+  .tabla-wrapper { overflow-x: auto; margin: -4px -4px 0; }
+  .tabla-computos {
+    width: 100%; min-width: 520px;
+    border-collapse: collapse; font-size: 13px;
+  }
+  .tabla-computos th {
+    background: var(--azul); color: #fff;
+    padding: 9px 8px; text-align: center; font-size: 11px;
+    font-weight: 700; letter-spacing: .3px; white-space: nowrap;
+  }
+  .tabla-computos td {
+    padding: 4px; border-bottom: 1px solid var(--linea);
+    vertical-align: middle;
+  }
+  .tabla-computos tr:nth-child(even) td { background: #fff5f5; }
+  .tabla-computos input {
+    border: 1px solid var(--linea); border-radius: 5px;
+    padding: 7px 6px; width: 100%; font-size: 13px;
+    background: transparent;
+  }
+  .tabla-computos input[type="number"] {
+    text-align: center; font-family: 'Roboto Mono', monospace;
+  }
+  .td-num { width: 28px; text-align: center; color: var(--gris); font-size: 11px; }
+  .td-del { width: 36px; text-align: center; }
+  .btn-del {
+    background: none; border: none; color: var(--error);
+    font-size: 18px; cursor: pointer; padding: 4px; line-height: 1;
+  }
+  .fila-totales td {
+    background: var(--azul) !important; color: #fff;
+    font-weight: 700; text-align: center; padding: 8px;
+    font-family: 'Roboto Mono', monospace; font-size: 13px;
+  }
+  .btn-add-fila {
+    width: 100%; margin-top: 10px;
+    background: none; border: 2px dashed var(--linea);
+    border-radius: 8px; padding: 11px; color: var(--rojo2);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .2s;
+  }
+  .btn-add-fila:active { background: #fff0f0; }
+
+  /* ─── BOTONES NAV ─── */
+  .nav-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: var(--blanco); border-top: 1px solid var(--linea);
+    padding: 10px 16px; display: flex; gap: 10px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,.08);
+  }
+  .btn-nav {
+    flex: 1; padding: 14px; border-radius: 10px; border: none;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .15s;
+  }
+  .btn-anterior  { background: var(--fondo); color: var(--texto); }
+  .btn-siguiente { background: var(--azul); color: #fff; box-shadow: 0 3px 10px rgba(139,0,0,.3); }
+  .btn-siguiente:active { transform: scale(.97); }
+
+  /* ─── PANTALLA RESUMEN ─── */
+  .resumen-encabezado {
+    text-align: center; padding: 20px 16px 10px;
+    border-bottom: 2px solid var(--linea); margin-bottom: 16px;
+  }
+  .resumen-encabezado h2 { font-size: 15px; color: var(--azul); font-weight: 700; }
+  .resumen-encabezado p  { font-size: 12px; color: var(--gris); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #fff0f0; color: var(--rojo2);
+    border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 600;
+  }
+  .dato-fila {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid var(--linea); font-size: 14px;
+  }
+  .dato-fila:last-child { border-bottom: none; }
+  .dato-label { color: var(--gris); font-size: 12px; }
+  .dato-valor { font-weight: 600; text-align: right; max-width: 65%; }
+
+  /* ─── ACCIONES FINALES ─── */
+  .acciones { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .btn-accion {
+    width: 100%; padding: 15px; border-radius: 10px; border: none;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all .15s;
+  }
+  .btn-sheets  { background: #0d7a3e; color: #fff; box-shadow: 0 3px 10px rgba(13,122,62,.25); }
+  .btn-imprimir{ background: var(--azul); color: #fff; box-shadow: 0 3px 10px rgba(139,0,0,.25); }
+  .btn-nuevo   { background: var(--fondo); color: var(--texto); border: 2px solid var(--linea); }
+  .btn-accion:active { transform: scale(.97); }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(3px);
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: var(--blanco); border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 480px; padding: 24px 20px 32px;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-titulo { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub    { font-size: 13px; color: var(--gris); margin-bottom: 18px; line-height: 1.5; }
+  .modal-input  { width: 100%; padding: 13px; border: 1.5px solid var(--linea);
+                  border-radius: 8px; font-size: 13px; margin-bottom: 12px; outline: none; }
+  .modal-input:focus { border-color: var(--rojo2); }
+  .modal-btns   { display: flex; gap: 10px; }
+  .btn-modal-ok { flex: 1; padding: 13px; background: var(--azul); color: #fff;
+                  border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-modal-cancel { padding: 13px 18px; background: var(--fondo); color: var(--texto);
+                      border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    z-index: 300; background: var(--texto); color: #fff;
+    border-radius: 10px; padding: 12px 20px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,.3); opacity: 0;
+    transition: all .3s; pointer-events: none; max-width: 90vw; text-align: center;
+  }
+  .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.ok    { background: var(--ok); }
+  .toast.error { background: var(--error); }
+
+  /* ─── SPINNER ─── */
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── ESTADO VACÍO ─── */
+  .empty-state {
+    text-align: center; padding: 20px; color: var(--gris);
+    font-size: 13px; font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="topbar">
+  <div class="topbar-logo">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAETklEQVR4nO2W3W9TZRjAf+/px/o1t3a62ckyWrr5scGGJpsxAgMNeGckEjDZBbswJl4g8S/wYuHSC4OJiTHEhJstISQEFUOi8QbmZigD6dRgGXb92kcLtD09bc85rxfrSpfJRU1UEvu7e06e9z2/87zPec4RUkrJY4jyXws8iqZYozTFGqUp1ihNsUZpijXKPy4mpcQwjIbXiS0fcSmRUoIQCEDWXReKgjTN9YXK+jPVYiFquUIINrYVQtS2NutyN3KklLW4nk0VqwkpynpidYGoXtsQEory8MbVuD63/maRSITx8XEikQiKoqBU997IqY8fKSaEwDB04jOzFLNZKkWV+7EltAc5ViILmEA2usj9P2IIITClZHn+Jom5n9C1EquZDKlkEiEE6XSalZUVwuEw+/bto7+/n3A4zPXr1ymVSgghyGazzMzMkEqltlRMyHUQwIN4gm8m3kXqBhKDngMHiJ6/gClN1GSKp4aHyP7yK6Zh8OaFc9z84kuWr11DAj6fjysDfZz/6mu+u3yZo8eOsXPnTlKpFCdOnGBqaopoNEo+nycYDDIxMcHJkycZHBwkFosxOTnJnj17ME1zvbLVwwchmP/sc1JXZ+g9+Bql9Crx73+g/flnefHDD/CGQuj5PGOffIyaTJFZWGD76wfYfuggnm4/K/M3ePmFAQrFImfPniWTydDZ2cnc3ByFQoG9e/cyNjaGz+fj1q1bxONxcrkchmEwPDxMR0fHpp7c0mPCYqGlvY3Q0bd5bvwdQLLt1VewOFvwPLONrt27sba0kIsnmPlokrUbP+P0daBqGiMjo4RCOzh9+lP8fj8DAwNUKhWi0SinTp1icXERr9eLruuEQiGOHz9Of38/U1NTTE9Pb3pBrOt6CkjJ7vffI/XjLL9Nn8PudmPzeFibv4mUgGIFBYxSEYvDgc3hxOZyUEgnQYC0WPG1ezl06A0mr1xl//79BAIBLBYLTqcTh8NBIpHAYrHg8XiIxWJcvHiR3t5e/H4/Q0NDmyr2cFxIkAKkbpCYnaV1ey8tra3k02me3LEDdXUVhMDe1kY+nsDt91PK5cjevo0vGECYkhavF02vsLa6ytN+P6ZpkkgkCAaDLC8vc+fOHQKBAJqm0dPTQyaTIRwOs2vXLjo7O7c2/0bDnTlzht+jUVxtbVSKRQqFAk+0t2MTgpdGRpibnUUB8sUidosFb0cHD1QVYRgMDA5iVRS+vXSJtw4fZiESYWlpia6uLiqVCt3d3eRyOZLJJKOjo1itVu7du8fdu3cplUr09fVx5MiRWvNvGrBra2tomobNasVut1MoFDCr88blcqFXKuiGgVKdcdI0sdlsGKZJpVzG5XKjakWcDgflchld13G5XKiqis1mw263o6oqra2tOJ1ONE1DVVXK5TJut7v2Amw+yscMa33wbzr+1bSvH7KPbcX+v789f5emWKM0xRqlKdYoTbFGaYo1yp9LnwFLntyUGwAAAABJRU5ErkJggg==" style="width:38px;height:38px;object-fit:contain;">
+    <div>
+      <div class="topbar-title">EMAVIAS</div>
+      <div class="topbar-sub">UCO.P01.R02 v2</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center;">
+  <button id="btnInstalarTop" onclick="instalarApp()" style="display:none;background:#e8a020;border:none;border-radius:8px;color:#2d0000;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;align-items:center;gap:4px;">
+    📲 Instalar
+  </button>
+  <button class="btn-config" onclick="abrirConfigSheets()">⚙️ Sheets</button>
+</div>
+</div>
+
+<!-- ═══ BARRA DE PASOS ═══ -->
+<div class="steps-bar">
+  <div class="step-tab activo" onclick="irPaso(0)" id="tab0"><span class="num">1</span>Encabezado</div>
+  <div class="step-tab"       onclick="irPaso(1)" id="tab1"><span class="num">2</span>Empresa</div>
+  <div class="step-tab"       onclick="irPaso(2)" id="tab2"><span class="num">3</span>Cómputos</div>
+  <div class="step-tab"       onclick="irPaso(3)" id="tab3"><span class="num">4</span>Resumen</div>
+</div>
+
+<!-- ═══ CONTENIDO ═══ -->
+<div class="contenido">
+
+  <!-- PASO 1: Encabezado -->
+  <div id="paso-0">
+    <div class="card">
+      <div class="card-header"><span class="icon">📋</span> Datos del Formulario</div>
+      <div class="card-body">
+        <div class="fila2">
+          <div class="campo">
+            <label>Fecha</label>
+            <input type="date" id="f-fecha">
+          </div>
+          <div class="campo">
+            <label>N° Cotización</label>
+            <input type="text" id="f-cotizacion" placeholder="Ej: 0042-2025" inputmode="text">
+          </div>
+        </div>
+        <div class="campo">
+          <label>Página</label>
+          <input type="text" id="f-pagina" placeholder="1" value="1" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: Empresa & Ubicación -->
+  <div id="paso-1" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="icon">🏢</span> Datos de la Empresa</div>
+      <div class="card-body">
+        <div class="campo">
+          <label>Empresa / Propietario</label>
+          <input type="text" id="f-empresa" placeholder="Nombre de empresa o propietario">
+        </div>
+        <div class="campo">
+          <label>Solicitante</label>
+          <input type="text" id="f-solicitante" placeholder="Nombre completo">
+        </div>
+        <div class="campo">
+          <label>Teléfono</label>
+          <input type="tel" id="f-telefono" placeholder="7x xxx xxxx" inputmode="tel">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="icon">📍</span> Ubicación</div>
+      <div class="card-body">
+        <div class="campo">
+          <label>Zona</label>
+          <input type="text" id="f-zona" placeholder="Nombre de zona o barrio">
+        </div>
+        <div class="campo">
+          <label>Av. / Calle / Pasaje</label>
+          <input type="text" id="f-calle" placeholder="Nombre de calle o avenida">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: Cómputos Métricos -->
+  <div id="paso-2" style="display:none">
+    <div class="card">
+      <div class="card-header"><span class="icon">📐</span> Cómputos Métricos</div>
+      <div class="card-body" style="padding: 12px 8px;">
+        <div class="tabla-wrapper">
+          <table class="tabla-computos">
+            <thead>
+              <tr>
+                <th style="width:22px">#</th>
+                <th>DETALLE</th>
+                <th style="width:55px">UNID.</th>
+                <th style="width:44px">CANT</th>
+                <th style="width:52px">LONG.</th>
+                <th style="width:52px">ANCHO</th>
+                <th style="width:52px">ALTO</th>
+                <th style="width:58px;background:#b87010;">RESULT.</th>
+                <th style="width:60px">OBS.</th>
+                <th style="width:28px"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyComputos"></tbody>
+            <tfoot>
+              <tr class="fila-totales">
+                <td colspan="3">TOTALES</td>
+                <td id="tot-long">0.00</td>
+                <td id="tot-ancho">0.00</td>
+                <td id="tot-alto">0.00</td>
+                <td id="tot-result" style="background:#e8a020!important;color:#2d0000;font-weight:700;text-align:center;">0.00</td>
+                <td id="tot-unid" style="background:#e8a020!important;color:#2d0000;font-weight:700;text-align:center;">—</td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button class="btn-add-fila" onclick="agregarFila()">＋ Agregar ítem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: Resumen -->
+  <div id="paso-3" style="display:none">
+    <div class="card">
+      <div class="card-body">
+        <div class="resumen-encabezado">
+          <h2>INSPECCIÓN COMERCIALIZACIÓN</h2>
+          <p>UCO.P01.R02 – Versión 2</p>
+          <div style="margin-top:8px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap">
+            <span class="chip" id="res-cotizacion-chip">—</span>
+            <span class="chip" id="res-fecha-chip">—</span>
+          </div>
+        </div>
+        <div id="resumen-datos"></div>
+        <div class="acciones">
+          <button class="btn-accion btn-sheets" onclick="enviarSheets()">
+            <span id="btn-sheets-icon">📊</span>
+            <span id="btn-sheets-texto">Enviar a Google Sheets</span>
+          </button>
+          <button class="btn-accion btn-nuevo" onclick="nuevoFormulario()">
+            🔄 Nuevo formulario
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ NAV BAR INFERIOR ═══ -->
+<div class="nav-bar">
+  <button class="btn-nav btn-anterior" id="btnAnterior" onclick="paso(-1)" style="display:none">← Atrás</button>
+  <button class="btn-nav btn-siguiente" id="btnSiguiente" onclick="paso(1)">Continuar →</button>
+</div>
+
+<!-- ═══ MODAL CONFIGURACIÓN SHEETS ═══ -->
+<div class="modal-overlay" id="modalSheets">
+  <div class="modal-box">
+    <div class="modal-titulo">⚙️ Configurar Google Sheets</div>
+    <div class="modal-sub">
+      Pega aquí la URL de tu Web App de Google Apps Script.<br><br>
+      <b>Cómo obtenerla:</b><br>
+      Apps Script → Implementar → Administrar implementaciones → URL
+    </div>
+    <input type="url" class="modal-input" id="inputWebAppUrl"
+           placeholder="https://script.google.com/macros/s/..." inputmode="url">
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-modal-ok" onclick="guardarUrl()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════
+var pasoActual  = 0;
+var totalPasos  = 4;
+var filaCount   = 0;
+var webAppUrl   = '';
+
+// Cargar URL guardada
+try { webAppUrl = localStorage.getItem('uco_webapp_url') || ''; } catch(e) {}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  // Fecha hoy
+  var hoy = new Date();
+  document.getElementById('f-fecha').value =
+    hoy.getFullYear() + '-' +
+    String(hoy.getMonth()+1).padStart(2,'0') + '-' +
+    String(hoy.getDate()).padStart(2,'0');
+
+  // Filas iniciales
+  agregarFila(); agregarFila(); agregarFila();
+
+  // URL previa
+  if (webAppUrl) document.getElementById('inputWebAppUrl').value = webAppUrl;
+});
+
+// ══════════════════════════════════════════════════════
+// NAVEGACIÓN POR PASOS
+// ══════════════════════════════════════════════════════
+function irPaso(destino) {
+  if (destino === pasoActual) return;
+  if (destino > pasoActual) {
+    for (var i = pasoActual; i < destino; i++) {
+      if (!validarPaso(i)) return;
+    }
+  }
+  if (destino === 3) construirResumen();
+  mostrarPaso(destino);
+}
+
+function paso(dir) {
+  var nuevo = pasoActual + dir;
+  if (nuevo < 0 || nuevo >= totalPasos) return;
+  if (dir > 0 && !validarPaso(pasoActual)) return;
+  if (nuevo === 3) construirResumen();
+  mostrarPaso(nuevo);
+}
+
+function mostrarPaso(n) {
+  // Ocultar paso actual
+  document.getElementById('paso-' + pasoActual).style.display = 'none';
+  var tabActual = document.getElementById('tab' + pasoActual);
+  tabActual.classList.remove('activo');
+  if (n > pasoActual) tabActual.classList.add('completo');
+
+  // Mostrar nuevo
+  pasoActual = n;
+  document.getElementById('paso-' + pasoActual).style.display = 'block';
+  var tabNuevo = document.getElementById('tab' + pasoActual);
+  tabNuevo.classList.add('activo');
+  tabNuevo.classList.remove('completo');
+
+  // Botones
+  var btnAnt = document.getElementById('btnAnterior');
+  var btnSig = document.getElementById('btnSiguiente');
+  btnAnt.style.display = pasoActual > 0 ? 'flex' : 'none';
+
+  if (pasoActual === 3) {
+    btnSig.style.display = 'none';
+  } else {
+    btnSig.style.display = 'flex';
+    btnSig.textContent = pasoActual === 2 ? 'Ver Resumen →' : 'Continuar →';
+  }
+  window.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════════════════════
+// VALIDACIÓN
+// ══════════════════════════════════════════════════════
+function validarPaso(n) {
+  if (n === 0) {
+    if (!v('f-fecha'))      { toast('La fecha es requerida', 'error'); return false; }
+    if (!v('f-cotizacion')) { toast('El N° Cotización es requerido', 'error'); return false; }
+  }
+  if (n === 1) {
+    if (!v('f-empresa'))     { toast('La empresa es requerida', 'error'); return false; }
+    if (!v('f-solicitante')) { toast('El solicitante es requerido', 'error'); return false; }
+  }
+  return true;
+}
+function v(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+// ══════════════════════════════════════════════════════
+// TABLA CÓMPUTOS
+// ══════════════════════════════════════════════════════
+function agregarFila() {
+  filaCount++;
+  var n = filaCount;
+  var s  = 'border:1px solid var(--linea);border-radius:5px;padding:6px 4px;width:100%;font-size:13px;background:transparent;';
+  var sN = s + 'text-align:center;font-family:\'Roboto Mono\',monospace;';
+  var tr = document.createElement('tr');
+  tr.id  = 'fila-' + n;
+  tr.innerHTML =
+    '<td style="text-align:center;color:var(--gris);font-size:11px;padding:2px;">' + n + '</td>' +
+    '<td style="padding:3px"><input type="text" placeholder="Descripción" data-col="det" oninput="calcTotales()" style="' + s + '"></td>' +
+    '<td style="padding:3px"><select data-col="unid" onchange="calcTotales()" style="' + s + 'padding:6px 2px;font-size:12px;">' +
+      '<option value="m2">m²</option>' +
+      '<option value="m3">m³</option>' +
+      '<option value="ml">ml</option>' +
+      '<option value="pza">Pza.</option>' +
+      '<option value="cant">Cant</option>' +
+    '</select></td>' +
+    '<td style="padding:3px"><input type="number" step="1" min="1" value="1" data-col="cant" oninput="calcTotales()" inputmode="numeric" style="' + sN + '"></td>' +
+    '<td style="padding:3px"><input type="number" step="0.01" min="0" placeholder="0.00" data-col="lon" oninput="calcTotales()" inputmode="decimal" style="' + sN + '"></td>' +
+    '<td style="padding:3px"><input type="number" step="0.01" min="0" placeholder="0.00" data-col="anc" oninput="calcTotales()" inputmode="decimal" style="' + sN + '"></td>' +
+    '<td style="padding:3px"><input type="number" step="0.01" min="0" placeholder="0.00" data-col="alt" oninput="calcTotales()" inputmode="decimal" style="' + sN + '"></td>' +
+    '<td data-col="result" style="text-align:center;padding:3px;font-family:\'Roboto Mono\',monospace;font-size:11px;font-weight:700;color:#b87010;white-space:nowrap;">—</td>' +
+    '<td style="padding:3px"><input type="text" placeholder="—" data-col="obs" style="' + s + '"></td>' +
+    '<td style="text-align:center;padding:2px"><button onclick="eliminarFila(' + n + ')" style="background:none;border:none;color:var(--error);font-size:18px;cursor:pointer;padding:3px;line-height:1;">✕</button></td>';
+  document.getElementById('tbodyComputos').appendChild(tr);
+  calcTotales();
+}
+
+function eliminarFila(n) {
+  var el = document.getElementById('fila-' + n);
+  if (el) { el.remove(); calcTotales(); }
+}
+
+function calcResult(cant, lon, anc, alt, unid) {
+  switch(unid) {
+    case 'm2':   return { val: cant * lon * anc,        label: 'm²' };
+    case 'm3':   return { val: cant * lon * anc * alt,  label: 'm³' };
+    case 'ml':   return { val: cant * lon,              label: 'ml' };
+    case 'pza':  return { val: cant,                    label: 'Pza.' };
+    case 'cant': return { val: cant,                    label: 'Cant' };
+    default:     return { val: 0, label: '—' };
+  }
+}
+
+function calcTotales() {
+  var filas = document.querySelectorAll('#tbodyComputos tr');
+  var tL = 0, tA = 0, tAlt = 0, tRes = 0, lastUnid = '—';
+  // Acumuladores por unidad
+  var totUnid = { m2: 0, m3: 0, ml: 0, pza: 0, cant: 0 };
+
+  filas.forEach(function(r) {
+    var cant = parseFloat(r.querySelector('[data-col="cant"]').value) || 1;
+    var lon  = parseFloat(r.querySelector('[data-col="lon"]').value)  || 0;
+    var anc  = parseFloat(r.querySelector('[data-col="anc"]').value)  || 0;
+    var alt  = parseFloat(r.querySelector('[data-col="alt"]').value)  || 0;
+    var unid = r.querySelector('[data-col="unid"]').value;
+    var res  = calcResult(cant, lon, anc, alt, unid);
+
+    tL   += lon;
+    tA   += anc;
+    tAlt += alt;
+    totUnid[unid] += res.val;
+    lastUnid = unid;
+
+    r.querySelector('[data-col="result"]').textContent = res.val.toFixed(2) + ' ' + res.label;
+  });
+
+  // Total: si todas las filas son la misma unidad, suma directa; si mixto, muestra cada una
+  var unidKeys = Object.keys(totUnid).filter(function(k){ return totUnid[k] > 0; });
+  var totText, totLabel;
+  if (unidKeys.length === 1) {
+    var uk = unidKeys[0];
+    var lbl = { m2:'m²', m3:'m³', ml:'ml', pza:'Pza.', cant:'Cant' }[uk];
+    totText  = totUnid[uk].toFixed(2);
+    totLabel = lbl;
+  } else if (unidKeys.length > 1) {
+    var lbl2 = { m2:'m²', m3:'m³', ml:'ml', pza:'Pza.', cant:'Cant' };
+    totText  = unidKeys.map(function(k){ return totUnid[k].toFixed(2)+' '+lbl2[k]; }).join(' | ');
+    totLabel = 'mix';
+  } else {
+    totText  = '0.00';
+    totLabel = '—';
+  }
+
+  document.getElementById('tot-long').textContent   = tL.toFixed(2);
+  document.getElementById('tot-ancho').textContent  = tA.toFixed(2);
+  document.getElementById('tot-alto').textContent   = tAlt.toFixed(2);
+  document.getElementById('tot-result').textContent = totText;
+  document.getElementById('tot-unid').textContent   = totLabel !== 'mix' ? totLabel : '';
+}
+
+function obtenerComputos() {
+  var filas = document.querySelectorAll('#tbodyComputos tr');
+  var items = [];
+  filas.forEach(function(r) {
+    var det  = r.querySelector('[data-col="det"]').value.trim();
+    var cant = parseFloat(r.querySelector('[data-col="cant"]').value) || 1;
+    var lon  = parseFloat(r.querySelector('[data-col="lon"]').value)  || 0;
+    var anc  = parseFloat(r.querySelector('[data-col="anc"]').value)  || 0;
+    var alt  = parseFloat(r.querySelector('[data-col="alt"]').value)  || 0;
+    var unid = r.querySelector('[data-col="unid"]').value;
+    var obs  = r.querySelector('[data-col="obs"]').value.trim();
+    var res  = calcResult(cant, lon, anc, alt, unid);
+    if (det || lon || anc || alt || cant > 1) {
+      items.push({
+        detalle: det, cantidad: cant,
+        longitud: lon, ancho: anc, alto: alt,
+        unidad: res.label, resultado: parseFloat(res.val.toFixed(2)),
+        observaciones: obs
+      });
+    }
+  });
+  return items;
+}
+
+// ══════════════════════════════════════════════════════
+// RESUMEN
+// ══════════════════════════════════════════════════════
+function construirResumen() {
+  document.getElementById('res-cotizacion-chip').textContent = '📄 Cot. ' + (v('f-cotizacion') || '—');
+  document.getElementById('res-fecha-chip').textContent      = '📅 ' + formatFecha(v('f-fecha'));
+
+  var html = '';
+  [
+    ['Empresa',     v('f-empresa')],
+    ['Solicitante', v('f-solicitante')],
+    ['Teléfono',    v('f-telefono')],
+    ['Zona',        v('f-zona')],
+    ['Calle / Av.', v('f-calle')],
+    ['Página',      v('f-pagina')]
+  ].forEach(function(c) {
+    if (c[1]) html += '<div class="dato-fila"><span class="dato-label">' + c[0] + '</span><span class="dato-valor">' + escHtml(c[1]) + '</span></div>';
+  });
+
+  var items = obtenerComputos();
+  if (items.length > 0) {
+    html += '<div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--linea)">';
+    html += '<div style="font-size:12px;font-weight:700;color:var(--azul);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">📐 Cómputos (' + items.length + ' ítems)</div>';
+    items.forEach(function(item, i) {
+      html += '<div style="background:var(--fondo);border-radius:8px;padding:10px 12px;margin-bottom:8px;">';
+      html += '<div style="font-weight:600;margin-bottom:4px;">' + (i+1) + '. ' + escHtml(item.detalle || '—') + '</div>';
+      html += '<div style="display:flex;gap:12px;font-size:13px;color:var(--gris);">';
+      if (item.cantidad && item.cantidad > 1) html += '<span>Cant: <b style="color:var(--texto)">' + item.cantidad + '</b></span>';
+      if (item.longitud) html += '<span>L: <b style="color:var(--texto)">' + item.longitud.toFixed(2) + 'm</b></span>';
+      if (item.ancho)    html += '<span>A: <b style="color:var(--texto)">' + item.ancho.toFixed(2) + 'm</b></span>';
+      if (item.alto)     html += '<span>H: <b style="color:var(--texto)">' + item.alto.toFixed(2) + 'm</b></span>';
+      html += '<span style="background:#e8a020;color:#2d0000;padding:1px 8px;border-radius:4px;font-weight:700;font-size:13px;">= ' + item.resultado.toFixed(2) + ' ' + item.unidad + '</span>';
+      html += '</div>';
+      if (item.observaciones) html += '<div style="font-size:12px;color:var(--gris);margin-top:3px;">📝 ' + escHtml(item.observaciones) + '</div>';
+      html += '</div>';
+    });
+    html += '<div style="background:var(--azul);color:#fff;border-radius:8px;padding:10px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">';
+    html += '<span>∑ Long: <b>' + document.getElementById('tot-long').textContent + 'm</b></span>';
+    html += '<span>∑ Ancho: <b>' + document.getElementById('tot-ancho').textContent + 'm</b></span>';
+    html += '<span>∑ Alto: <b>' + document.getElementById('tot-alto').textContent + 'm</b></span>';
+    var totResult = document.getElementById('tot-result').textContent;
+    var totUnid   = document.getElementById('tot-unid').textContent;
+    html += '<span style="background:var(--acento);color:var(--texto);padding:4px 10px;border-radius:6px;font-size:15px;font-weight:700;">📐 Total: ' + totResult + ' ' + totUnid + '</span>';
+    html += '</div></div>';
+  } else {
+    html += '<div class="empty-state">Sin ítems de cómputos registrados</div>';
+  }
+
+  document.getElementById('resumen-datos').innerHTML = html;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function formatFecha(f) {
+  if (!f) return '—';
+  var p = f.split('-');
+  return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : f;
+}
+
+// ══════════════════════════════════════════════════════
+// ENVÍO A GOOGLE SHEETS  (JSONP + fallback no-cors)
+// ══════════════════════════════════════════════════════
+function enviarSheets() {
+  if (!webAppUrl) {
+    abrirConfigSheets();
+    toast('⚠️ Primero configura la URL de Google Sheets', 'error');
+    return;
+  }
+
+  var payload = {
+    timestamp:       new Date().toISOString(),
+    fecha:           v('f-fecha'),
+    cotizacion:      v('f-cotizacion'),
+    pagina:          v('f-pagina'),
+    empresa:         v('f-empresa'),
+    solicitante:     v('f-solicitante'),
+    telefono:        v('f-telefono'),
+    zona:            v('f-zona'),
+    calle:           v('f-calle'),
+    computos:        obtenerComputos(),
+    total_longitud:  document.getElementById('tot-long').textContent,
+    total_ancho:     document.getElementById('tot-ancho').textContent,
+    total_alto:      document.getElementById('tot-alto').textContent,
+    total_resultado: document.getElementById('tot-result').textContent + ' ' + document.getElementById('tot-unid').textContent
+  };
+
+  // Indicar carga
+  document.getElementById('btn-sheets-icon').innerHTML = '<span class="spinner"></span>';
+  document.getElementById('btn-sheets-texto').textContent = 'Enviando…';
+  document.querySelector('.btn-sheets').disabled = true;
+
+  // ── INTENTO 1: JSONP ──
+  var cbName = 'uco_cb_' + Date.now();
+  var scriptTag = document.createElement('script');
+  var timer;
+  var respondio = false;
+
+  window[cbName] = function(resp) {
+    respondio = true;
+    clearTimeout(timer);
+    scriptTag.remove();
+    delete window[cbName];
+    resetBtnSheets();
+    if (resp && resp.status === 'ok') {
+      toast('✅ ' + (resp.filas || '?') + ' fila(s) guardadas en Sheets', 'ok');
+    } else {
+      toast('✅ Datos enviados a Google Sheets', 'ok');
+    }
+  };
+
+  // Si JSONP no responde en 9s → fallback no-cors
+  timer = setTimeout(function() {
+    if (respondio) return;
+    scriptTag.remove();
+    delete window[cbName];
+
+    // ── INTENTO 2: no-cors POST (siempre funciona, sin confirmación) ──
+    fetch(webAppUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(function() {
+      resetBtnSheets();
+      toast('✅ Datos enviados. Verifica tu hoja de cálculo.', 'ok');
+    })
+    .catch(function() {
+      resetBtnSheets();
+      toast('❌ Sin conexión. Revisa tu internet y URL.', 'error');
+    });
+  }, 9000);
+
+  scriptTag.onerror = function() {
+    clearTimeout(timer);
+    scriptTag.remove();
+    delete window[cbName];
+    resetBtnSheets();
+    toast('❌ URL inválida. Revisa la configuración ⚙️', 'error');
+  };
+
+  scriptTag.src = webAppUrl +
+    '?callback=' + cbName +
+    '&data=' + encodeURIComponent(JSON.stringify(payload));
+
+  document.head.appendChild(scriptTag);
+}
+
+function resetBtnSheets() {
+  document.getElementById('btn-sheets-icon').textContent = '📊';
+  document.getElementById('btn-sheets-texto').textContent = 'Enviar a Google Sheets';
+  document.querySelector('.btn-sheets').disabled = false;
+}
+
+// ══════════════════════════════════════════════════════
+// IMPRIMIR
+// ══════════════════════════════════════════════════════
+function imprimirFormulario() {
+  var computos = obtenerComputos();
+  var filasHtml = '';
+  for (var i = 0; i < Math.max(computos.length, 10); i++) {
+    var item = computos[i] || {};
+    filasHtml +=
+      '<tr>' +
+      '<td style="text-align:center;width:30px">' + (i+1) + '</td>' +
+      '<td>' + (item.detalle || '') + '</td>' +
+      '<td style="text-align:center;width:70px">' + (item.longitud ? item.longitud.toFixed(2) : '') + '</td>' +
+      '<td style="text-align:center;width:70px">' + (item.ancho    ? item.ancho.toFixed(2)    : '') + '</td>' +
+      '<td style="text-align:center;width:70px">' + (item.alto     ? item.alto.toFixed(2)     : '') + '</td>' +
+      '<td>' + (item.observaciones || '') + '</td>' +
+      '</tr>';
+  }
+
+  var tL   = document.getElementById('tot-long').textContent;
+  var tA   = document.getElementById('tot-ancho').textContent;
+  var tAlt = document.getElementById('tot-alto').textContent;
+  var tM2  = document.getElementById('tot-m2').textContent;
+
+  var html =
+  '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+  '<meta name="viewport" content="width=device-width">' +
+  '<title>UCO.P01.R02 – ' + v('f-cotizacion') + '</title>' +
+  '<style>' +
+  'body{font-family:Arial,sans-serif;font-size:10.5pt;margin:0;padding:8mm;color:#111}' +
+  'table{width:100%;border-collapse:collapse;margin-bottom:4mm}' +
+  'th,td{border:1px solid #333;padding:4px 7px;font-size:10pt}' +
+  'th{background:#8b0000;color:#fff}' +
+  '.enc{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5mm;padding-bottom:3mm;border-bottom:2px solid #8b0000}' +
+  '.tit{color:#8b0000;font-size:13pt;font-weight:bold;text-align:center}' +
+  '.info{display:grid;grid-template-columns:1fr 1fr;gap:1mm 6mm;margin-bottom:4mm;font-size:10pt}' +
+  '.lbl{font-weight:bold;color:#8b0000}' +
+  '.tot td{background:#8b0000!important;color:#fff;font-weight:bold;text-align:center}' +
+  '.firmas{display:flex;justify-content:space-around;margin-top:10mm}' +
+  '.firma{text-align:center;font-size:10pt}' +
+  '.firma-linea{border-top:1px solid #333;width:120px;margin:12mm auto 3px}' +
+  '.btn{display:block;margin:8mm auto;padding:9px 28px;background:#8b0000;color:#fff;border:none;border-radius:5px;font-size:12pt;cursor:pointer}' +
+  '@media print{.btn{display:none}@page{margin:8mm}}' +
+  '</style></head><body>' +
+
+  '<div class="enc">' +
+    '<div><div style="font-weight:bold;font-size:13pt;color:#8b0000">EMAVIAS</div><div style="font-size:9pt;color:#888">Empresa Municipal de Aseo</div></div>' +
+    '<div class="tit">INSPECCIÓN<br>COMERCIALIZACIÓN</div>' +
+    '<div style="text-align:right;font-size:9.5pt">' +
+      '<div><b>Código:</b> UCO.P01.R02</div>' +
+      '<div><b>Versión:</b> 2</div>' +
+      '<div><b>Fecha:</b> '   + formatFecha(v('f-fecha'))   + '</div>' +
+      '<div><b>N° Cot.:</b> ' + v('f-cotizacion')           + '</div>' +
+      '<div><b>Página:</b> '  + v('f-pagina')               + '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="info">' +
+    '<div><span class="lbl">Empresa:</span> '    + v('f-empresa')    + '</div>' +
+    '<div><span class="lbl">Solicitante:</span> '+ v('f-solicitante')+ '</div>' +
+    '<div><span class="lbl">Teléfono:</span> '   + v('f-telefono')   + '</div>' +
+    '<div><span class="lbl">Zona:</span> '       + v('f-zona')       + '</div>' +
+    '<div style="grid-column:1/-1"><span class="lbl">Calle / Av.:</span> ' + v('f-calle') + '</div>' +
+  '</div>' +
+
+  '<table><thead><tr><th>#</th><th>DETALLE</th><th>LONGITUD (m)</th><th>ANCHO (m)</th><th>ALTO (m)</th><th>OBSERVACIONES</th></tr></thead>' +
+  '<tbody>' + filasHtml + '</tbody>' +
+  '<tfoot><tr class="tot"><td colspan="2">TOTALES</td><td>' + tL + '</td><td>' + tA + '</td><td>' + tAlt + '</td><td></td></tr>' +
+  '<tr><td colspan="3" style="background:#e8a020;font-weight:bold;text-align:right;color:#111;">TOTAL m² (Long × Ancho):</td><td colspan="3" style="background:#e8a020;font-weight:bold;text-align:center;font-size:13pt;color:#111;">' + tM2 + '</td></tr>' +
+  '</tfoot></table>' +
+
+  '<div class="firmas">' +
+    '<div class="firma"><div class="firma-linea"></div>FIRMA INSPECTOR</div>' +
+    '<div class="firma"><div class="firma-linea"></div>FIRMA PROPIETARIO</div>' +
+  '</div>' +
+
+  '<button class="btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>' +
+  '</body></html>';
+
+  var ventana = window.open('', '_blank');
+  if (ventana) {
+    ventana.document.write(html);
+    ventana.document.close();
+  } else {
+    // Fallback: descargar como archivo
+    var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = 'UCO_' + (v('f-cotizacion') || 'formulario') + '.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('📄 Formulario descargado — ábrelo para imprimir', 'ok');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// NUEVO FORMULARIO
+// ══════════════════════════════════════════════════════
+function nuevoFormulario() {
+  if (!confirm('¿Crear formulario nuevo?\nLos datos actuales se perderán.')) return;
+  ['f-cotizacion','f-empresa','f-solicitante','f-telefono','f-zona','f-calle'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-pagina').value = '1';
+  var hoy = new Date();
+  document.getElementById('f-fecha').value =
+    hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
+
+  document.getElementById('tbodyComputos').innerHTML = '';
+  filaCount = 0;
+  agregarFila(); agregarFila(); agregarFila();
+  calcTotales();
+
+  for (var i = 0; i < 4; i++) {
+    document.getElementById('tab'+i).className = 'step-tab' + (i===0 ? ' activo' : '');
+  }
+  pasoActual = 0;
+  for (var j = 0; j < 4; j++) document.getElementById('paso-'+j).style.display = j===0?'block':'none';
+  document.getElementById('btnAnterior').style.display = 'none';
+  document.getElementById('btnSiguiente').style.display = 'flex';
+  document.getElementById('btnSiguiente').textContent = 'Continuar →';
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════════════
+// MODAL SHEETS
+// ══════════════════════════════════════════════════════
+function abrirConfigSheets() {
+  document.getElementById('inputWebAppUrl').value = webAppUrl;
+  document.getElementById('modalSheets').classList.add('visible');
+}
+function cerrarModal() {
+  document.getElementById('modalSheets').classList.remove('visible');
+}
+function guardarUrl() {
+  var url = document.getElementById('inputWebAppUrl').value.trim();
+  if (!url || !url.startsWith('https://script.google.com')) {
+    toast('URL inválida. Debe iniciar con https://script.google.com', 'error');
+    return;
+  }
+  webAppUrl = url;
+  try { localStorage.setItem('uco_webapp_url', url); } catch(e) {}
+  cerrarModal();
+  toast('✅ URL guardada correctamente', 'ok');
+}
+document.getElementById('modalSheets').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModal();
+});
+
+// ══════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════
+var toastTimer;
+function toast(msg, tipo) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast visible ' + (tipo || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.className = 'toast'; }, 4000);
+}
+
+// ══════════════════════════════════════════════════════
+// PWA – Service Worker + Banner de instalación
+// ══════════════════════════════════════════════════════
+var deferredPrompt = null;
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister();})});
+  navigator.serviceWorker.register('./sw.js?v=3').then(function(reg) {
+    console.log('SW registrado:', reg.scope);
+  }).catch(function(err) {
+    console.log('SW error:', err);
+  });
+}
+
+// Capturar evento de instalación
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  mostrarBannerInstalar();
+});
+
+window.addEventListener('appinstalled', function() {
+  ocultarBannerInstalar();
+  toast('✅ App instalada correctamente', 'ok');
+});
+
+function mostrarBannerInstalar() {
+  var banner = document.getElementById('bannerInstalar');
+  if (banner) banner.style.display = 'flex';
+  // También mostrar botón en topbar
+  var btnTop = document.getElementById('btnInstalarTop');
+  if (btnTop) btnTop.style.display = 'flex';
+}
+function ocultarBannerInstalar() {
+  var banner = document.getElementById('bannerInstalar');
+  if (banner) banner.style.display = 'none';
+  deferredPrompt = null;
+}
+function mostrarInstruccionesInstalar() {
+  if (deferredPrompt) {
+    instalarApp();
+  } else {
+    document.getElementById('modalInstalar').style.display = 'flex';
+  }
+}
+
+function instalarApp() {
+  if (!deferredPrompt) {
+    toast('Usa el menú del navegador → "Agregar a pantalla de inicio"', '');
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(r) {
+    if (r.outcome === 'accepted') toast('✅ Instalando app…', 'ok');
+    deferredPrompt = null;
+    ocultarBannerInstalar();
+  });
+}
+</script>
+
+<!-- Banner de instalación -->
+<div id="bannerInstalar" style="display:none;position:fixed;bottom:72px;left:12px;right:12px;z-index:150;
+     background:#8b0000;color:#fff;border-radius:14px;padding:14px 16px;
+     align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,.35);">
+  <img src="./icons/icon-96.png" style="width:40px;height:40px;border-radius:10px;flex-shrink:0;">
+  <div style="flex:1;min-width:0;">
+    <div style="font-weight:700;font-size:14px;">Instalar UCO Inspección</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">Acceso rápido desde tu pantalla de inicio</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+    <button onclick="instalarApp()" style="background:#e8a020;color:#2d0000;border:none;border-radius:8px;
+            padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Instalar</button>
+    <button onclick="ocultarBannerInstalar()" style="background:rgba(255,255,255,.15);color:#fff;border:none;
+            border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;">Ahora no</button>
+  </div>
+</div>
+
+</body>
+</html>
