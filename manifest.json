@@ -2,9 +2,8 @@
   "name": "UCO Inspección Comercialización",
   "short_name": "UCO Inspección",
   "description": "Formulario UCO.P01.R02 – Inspección de Comercialización EMAVIAS",
-  "id": "uco-inspeccion-emavias-v2",
-  "start_url": "/uco-inspeccion/index.html?v=2",
-  "scope": "/uco-inspeccion/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#8b0000",
   "theme_color": "#8b0000",
@@ -12,18 +11,18 @@
   "lang": "es",
   "icons": [
     {
-      "src": "/uco-inspeccion/icon-96.png",
+      "src": "icon-96.png",
       "sizes": "96x96",
       "type": "image/png"
     },
     {
-      "src": "/uco-inspeccion/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/uco-inspeccion/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
