@@ -1,11 +1,11 @@
-// UCO PWA – Service Worker v4
-var CACHE = 'uco-v4';
+// UCO PWA – Service Worker v5
+var CACHE = 'uco-v5';
 var ARCHIVOS = [
   'index.html',
   'manifest.json',
-  'icon-96.png',
-  'icon-192.png',
-  'icon-512.png'
+  'icons/icon-96.png',
+  'icons/icon-192.png',
+  'icons/icon-512.png'
 ];
 
 self.addEventListener('install', function(e) {
